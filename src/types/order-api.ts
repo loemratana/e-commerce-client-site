@@ -82,6 +82,15 @@ export type ShippingAddressResponse = {
   country: string | null;
 };
 
+/** A coupon shoppers can use right now (GET /api/v1/coupons/available). */
+export type AvailableCoupon = {
+  code: string;
+  discountType: "PERCENTAGE" | "FIXED" | string;
+  discountValue: number;
+  minOrderAmount: number | null;
+  expiryDate: string;
+};
+
 export type OrderCouponResponse = {
   id: number;
   couponCode: string;

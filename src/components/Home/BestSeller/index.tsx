@@ -57,13 +57,20 @@ const BestSeller = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 xl:gap-7.5">
           {isLoading &&
-            Array.from({ length: 3 }, (_, index) => (
+            Array.from({ length: 4 }, (_, index) => (
               <div
                 key={index}
-                className="min-h-[403px] animate-pulse rounded-lg bg-gray-2"
-              />
+                className="animate-pulse overflow-hidden rounded-lg border border-gray-3"
+              >
+                <div className="aspect-square bg-gray-2" />
+                <div className="space-y-2 p-4">
+                  <div className="h-4 w-3/4 rounded bg-gray-2" />
+                  <div className="h-3 w-1/3 rounded bg-gray-2" />
+                  <div className="h-4 w-1/4 rounded bg-gray-2" />
+                </div>
+              </div>
             ))}
           {!isLoading &&
             products.map((item) => <SingleItem item={item} key={item.id} />)}

@@ -48,6 +48,16 @@ export const productsApi = {
   },
 
   /**
+   * In-stock products from the same category with a matching type (same sub-category first)
+   * GET /api/v1/product/{id}/related?limit={limit}
+   */
+  getRelated(id: number | string, limit = 8): Promise<ApiProduct[]> {
+    return apiClient.get<ApiProduct[]>(
+      `${PRODUCTS_ENDPOINT}/${id}/related?limit=${limit}`
+    );
+  },
+
+  /**
    * Newest in-stock products added in the last N days with complete variant details
    * GET /api/v1/product/new-arrivals?days={days}&limit={limit}
    */

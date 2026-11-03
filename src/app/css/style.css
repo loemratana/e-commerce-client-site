@@ -248,3 +248,7 @@ input[type='search']::-webkit-search-results-decoration {
 [data-slot="drawer-popup"][data-swipe-direction="up"][data-ending-style] {
   transform: translate3d(0, -100%, 0) !important;
 }
+/* Welcome tour: the sticky header (z-9999) would sit above the tour overlay and hide the card */
+body:has([data-name="onborda-pointer"]) header.sticky {
+  z-index: auto;
+}

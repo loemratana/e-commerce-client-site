@@ -13,6 +13,7 @@ import CartSidebarModal from "@/components/Common/CartSidebarModal";
 import { PreviewSliderProvider } from "../context/PreviewSliderContext";
 import PreviewSliderModal from "@/components/Common/PreviewSlider";
 
+import SiteTour from "@/components/Tour/SiteTour";
 import ScrollToTop from "@/components/Common/ScrollToTop";
 import PreLoader from "@/components/Common/PreLoader";
 import { Toaster } from "react-hot-toast";
@@ -58,8 +59,10 @@ export default function RootLayout({
               <CartModalProvider>
                 <ModalProvider>
                   <PreviewSliderProvider>
-                    <Header />
-                    <Fragment key={currencyRevision}>{children}</Fragment>
+                    <SiteTour>
+                      <Header />
+                      <Fragment key={currencyRevision}>{children}</Fragment>
+                    </SiteTour>
 
                     <QuickViewModal />
                     <CartSidebarModal />

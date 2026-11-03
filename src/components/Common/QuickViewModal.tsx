@@ -12,6 +12,7 @@ import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
 import { resetQuickView, updateQuickView } from "@/redux/features/quickView-slice";
 import { updateproductDetails } from "@/redux/features/product-details";
 import VariantPicker, { VariantSelection } from "@/components/Common/VariantPicker";
+import QuickViewRelated from "@/components/Common/QuickViewRelated";
 import { productsApi } from "@/lib/api/products.api";
 import {
   defaultVariant,
@@ -19,6 +20,7 @@ import {
   findVariant,
   getImagesForColor,
   toCardProduct,
+  variantDiscountPercent,
 } from "@/lib/variants";
 
 const QuickViewModal = () => {
@@ -89,7 +91,11 @@ const QuickViewModal = () => {
       ? { ...baseProduct, imgs: { thumbnails: gallery, previews: gallery } }
       : baseProduct;
   const discountPercent =
-    product.price > product.discountedPrice
+    selectedVariant
+      ? variantDiscountPercent(selectedVariant)
+      : product.discountPercent !== undefined && product.discountPercent > 0
+      ? product.discountPercent
+      : product.price > product.discountedPrice
       ? Math.round((1 - product.discountedPrice / product.price) * 100)
       : 0;
   // Can add if a valid variant is selected with stock
@@ -542,6 +548,8 @@ const QuickViewModal = () => {
               </div>
             </div>
           </div>
+
+          {isModalOpen && apiProduct && <QuickViewRelated productId={apiProduct.id} />}
         </div>
       </div>
     </div>

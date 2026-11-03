@@ -8,6 +8,7 @@ import AddressSelector from "./AddressSelector";
 import Coupon from "./Coupon";
 import OrderList from "./OrderList";
 import PaymentMethodSelector from "./PaymentMethodSelector";
+import { isOnlinePaymentMethod } from "@/lib/payment-utils";
 import { addressesApi } from "@/lib/api/addresses.api";
 import { ordersApi } from "@/lib/api/orders.api";
 import { paymentsApi } from "@/lib/api/payments.api";
@@ -105,7 +106,7 @@ const Checkout = () => {
           method: paymentMethod,
         });
         if (payment.redirectUrl) {
-          // Online payment (Stripe Checkout): the order is confirmed once the payment succeeds.
+          // Online payment (Stripe Checkout, ABA PayWay): the order is confirmed once the payment succeeds.
           window.location.assign(payment.redirectUrl);
           return;
         }
@@ -213,7 +214,7 @@ const Checkout = () => {
                   >
                     {isPlacing
                       ? "Placing order…"
-                      : paymentMethod === "STRIPE"
+                      : isOnlinePaymentMethod(paymentMethod)
                         ? "Continue to payment"
                         : "Place order"}
                   </button>

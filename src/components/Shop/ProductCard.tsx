@@ -8,7 +8,8 @@ import { updateQuickView } from "@/redux/features/quickView-slice";
 import { AppDispatch } from "@/redux/store";
 import { Product } from "@/types/product";
 import { ApiProduct } from "@/types/product-api";
-import { isInStock, toCardProduct } from "@/lib/variants";
+import { isInStock, toCardProduct, variantDiscountPercent } from "@/lib/variants";
+import ProductLink from "../Home/ProductLink";
 
 interface ProductCardProps {
   product: ApiProduct;
@@ -34,14 +35,20 @@ const ProductCard = ({ product, layout }: ProductCardProps) => {
     openModal();
   };
   const priceVariant = variants
-    .map((variant) => ({
-      price:
+    .map((variant) => {
+      const price =
         variant.priceAfterDiscount !== null &&
         variant.priceAfterDiscount < variant.price
           ? variant.priceAfterDiscount
-          : variant.price,
-      originalPrice: variant.price,
-    }))
+          : variant.price;
+      const discount = variantDiscountPercent(variant);
+
+      return {
+        price,
+        originalPrice: variant.price,
+        discountPercent: discount,
+      };
+    })
     .sort((left, right) => left.price - right.price)[0];
 
   return (
@@ -57,18 +64,25 @@ const ProductCard = ({ product, layout }: ProductCardProps) => {
             : "min-h-[270px] w-full"
         }`}
       >
-        <Image
-          src={product.imageCover || "/images/products/product-1-bg-1.png"}
-          alt={product.title}
-          fill
-          unoptimized
-          sizes={
-            layout === "list"
-              ? "(max-width: 640px) 100vw, 250px"
-              : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          }
-          className="object-contain p-5 transition-transform duration-300 group-hover:scale-105"
-        />
+        {priceVariant && priceVariant.discountPercent > 0 && (
+          <span className="absolute left-3 top-3 z-10 rounded bg-red px-2 py-0.5 text-xs font-medium text-white shadow-sm">
+            -{priceVariant.discountPercent}%
+          </span>
+        )}
+        <ProductLink product={cardProduct} className="absolute inset-0">
+          <Image
+            src={product.imageCover || "/images/products/product-1-bg-1.png"}
+            alt={product.title}
+            fill
+            unoptimized
+            sizes={
+              layout === "list"
+                ? "(max-width: 640px) 100vw, 250px"
+                : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            }
+            className="object-contain p-5 transition-transform duration-300 group-hover:scale-105"
+          />
+        </ProductLink>
 
         <div className="pointer-events-none absolute bottom-0 left-0 flex w-full translate-y-full items-center justify-center gap-2.5 pb-5 transition-transform duration-200 group-hover:translate-y-0 group-focus-within:translate-y-0">
           <button
@@ -133,7 +147,7 @@ const ProductCard = ({ product, layout }: ProductCardProps) => {
           {product.brand?.brandName ?? "Unbranded"}
         </p>
         <h2 className="mb-1.5 mt-1 font-medium text-dark transition-colors group-hover:text-blue">
-          {product.title}
+          <ProductLink product={cardProduct}>{product.title}</ProductLink>
         </h2>
         <p className="mt-1 text-sm text-gray-500">
           {product.subCategory?.subCategoryName}

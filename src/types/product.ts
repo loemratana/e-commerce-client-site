@@ -5,6 +5,7 @@ export type Product = {
   reviews: number;
   price: number;
   discountedPrice: number;
+  discountPercent?: number;
   id: number;
   productVariantId?: number;
   /** Full API product, so quick view can offer color/size selection. */

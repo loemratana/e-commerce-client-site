@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { productsService } from "@/lib/services/products.service";
-import { ProductFilters, ProductPage } from "@/types/product-api";
+import { ApiProduct, ProductFilters, ProductPage } from "@/types/product-api";
+
+// One shared empty list: a new [] each render would look like new products to effects
+const NO_PRODUCTS: ApiProduct[] = [];
 
 export const useProducts = (filters: ProductFilters) => {
   const [result, setResult] = useState<ProductPage | null>(null);
@@ -13,6 +16,7 @@ export const useProducts = (filters: ProductFilters) => {
   // Depend on the individual values, not the object: callers pass a new filters object on
   // every render, which would refetch in a loop.
   const {
+    type,
     title,
     brandId,
     subCategoryId,
@@ -32,6 +36,7 @@ export const useProducts = (filters: ProductFilters) => {
 
     productsService
       .getAll({
+        type,
         title,
         brandId,
         subCategoryId,
@@ -66,6 +71,7 @@ export const useProducts = (filters: ProductFilters) => {
       isActive = false;
     };
   }, [
+    type,
     title,
     brandId,
     subCategoryId,
@@ -79,7 +85,7 @@ export const useProducts = (filters: ProductFilters) => {
   ]);
 
   return {
-    products: result?.content ?? [],
+    products: result?.content ?? NO_PRODUCTS,
     pagination: result?.page ?? null,
     isLoading,
     error,

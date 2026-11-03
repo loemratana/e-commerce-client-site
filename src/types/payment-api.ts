@@ -1,5 +1,5 @@
 // Mirrors ecommerce-api/payment/dto.
-export type PaymentMethod = "STRIPE" | "CASH_ON_DELIVERY";
+export type PaymentMethod = "STRIPE" | "ABA_PAYWAY" | "CASH_ON_DELIVERY";
 
 export type PaymentStatus =
   | "PENDING"
@@ -23,7 +23,7 @@ export type PaymentResponse = {
   amount: number;
   refundedAmount: number;
   currency: string;
-  /** Send the customer here to pay (Stripe Checkout); null for cash on delivery. */
+  /** Send the customer here to pay (Stripe Checkout, ABA PayWay); null for cash on delivery. */
   redirectUrl: string | null;
   failureReason: string | null;
   paidAt: string | null;

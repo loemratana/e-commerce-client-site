@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import ProductCard from "../Shop/ProductCard";
+import ProductTypeTabs from "../Shop/ProductTypeTabs";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductFilters } from "@/types/product-api";
 
@@ -42,6 +43,13 @@ const ShopWithoutSidebar = () => {
       />
       <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#f3f4f6]">
         <div className="site-container">
+          <ProductTypeTabs
+            value={filters.type}
+            onChange={(type) =>
+              setFilters((current) => ({ ...current, type, page: 0 }))
+            }
+          />
+
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg bg-white px-4 py-3 shadow-1">
             <p className="text-sm text-gray-600" aria-live="polite">
               {isLoading && !pagination

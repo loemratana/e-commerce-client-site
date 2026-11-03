@@ -8,6 +8,7 @@ import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
   PAYMENT_STATUS_STYLES,
+  isOnlinePaymentMethod,
   needsPaymentAction,
 } from "@/lib/payment-utils";
 import { OrderResponse } from "@/types/order-api";
@@ -118,7 +119,9 @@ const OrderPayment = ({ order, onChange, variant = "card" }: Props) => {
               {captured.status === "REFUNDED" ? "Refunded" : "Partly refunded"}: {formatPrice(captured.refundedAmount)}
               {captured.method === "STRIPE"
                 ? " to your card. It can take 5–10 business days to show on your statement."
-                : ", handed back in cash."}
+                : captured.method === "ABA_PAYWAY"
+                  ? " to the account or card you paid with on ABA PayWay."
+                  : ", handed back in cash."}
             </p>
           )}
           {!captured && latest?.failureReason && <p className="text-red">{latest.failureReason}</p>}
@@ -152,7 +155,7 @@ const OrderPayment = ({ order, onChange, variant = "card" }: Props) => {
                 disabled={!selected || isPaying}
                 className="mt-4 rounded-lg bg-blue px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-dark transition-colors disabled:opacity-60"
               >
-                {isPaying ? "Starting payment…" : selected === "STRIPE" ? "Pay now" : "Confirm"}
+                {isPaying ? "Starting payment…" : isOnlinePaymentMethod(selected) ? "Pay now" : "Confirm"}
               </button>
             </>
           )}

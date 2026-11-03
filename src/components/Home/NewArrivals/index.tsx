@@ -89,7 +89,10 @@ const NewArrival = () => {
         {!isLoading && products.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-7.5 gap-y-9">
             {products.map((item, key) => (
-              <ProductItem item={item} key={key} />
+              // The first product is the welcome tour's "Explore products" target
+              <div key={key} id={key === 0 ? "tour-products" : undefined}>
+                <ProductItem item={item} />
+              </div>
             ))}
           </div>
         )}

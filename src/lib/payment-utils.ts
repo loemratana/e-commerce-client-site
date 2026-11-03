@@ -2,13 +2,19 @@ import { PaymentMethod, PaymentStatus } from "@/types/payment-api";
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   STRIPE: "Card",
+  ABA_PAYWAY: "ABA PayWay",
   CASH_ON_DELIVERY: "Cash on delivery",
 };
 
 export const PAYMENT_METHOD_DESCRIPTIONS: Record<PaymentMethod, string> = {
   STRIPE: "Pay securely by card on Stripe. You'll be redirected to complete the payment.",
+  ABA_PAYWAY: "Pay with ABA Pay, KHQR or card on ABA PayWay. You'll be redirected to complete the payment.",
   CASH_ON_DELIVERY: "Pay the courier in cash when your order arrives.",
 };
+
+/** Methods paid on the gateway's page (redirect), as opposed to cash on delivery. */
+export const isOnlinePaymentMethod = (method: PaymentMethod | null | undefined) =>
+  method === "STRIPE" || method === "ABA_PAYWAY";
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   PENDING: "Awaiting payment",
@@ -44,6 +50,9 @@ export const orderPaymentNote = (
   if (paymentMethod === "STRIPE") {
     // A cancelled card order may never have been paid, or was refunded: the details show which.
     return status === "PENDING" ? "Card · awaiting payment" : status === "CANCELLED" ? null : "Paid by card";
+  }
+  if (paymentMethod === "ABA_PAYWAY") {
+    return status === "PENDING" ? "ABA PayWay · awaiting payment" : status === "CANCELLED" ? null : "Paid with ABA PayWay";
   }
   return status === "PENDING" ? "Payment not started" : null;
 };

@@ -17,10 +17,12 @@ import Breadcrumb from "../Common/Breadcrumb";
 import FilterOptionsDropdown, { FilterOption } from "./FilterOptionsDropdown";
 import PriceDropdown from "./PriceDropdown";
 import ProductCard from "../Shop/ProductCard";
+import ProductTypeTabs from "../Shop/ProductTypeTabs";
+import { useBrands } from "@/hooks/useBrands";
 import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
 import { useSubcategories } from "@/hooks/useSubcategories";
-import { ProductFilters } from "@/types/product-api";
+import { PRODUCT_TYPES, ProductFilters, ProductType } from "@/types/product-api";
 
 const INITIAL_FILTERS: ProductFilters = {
   page: 0,
@@ -78,6 +80,7 @@ const ShopWithSidebarContent = () => {
     error,
     retry,
   } = useProducts(filters);
+  const { brands } = useBrands();
 
   useEffect(() => {
     if (queryString === lastWrittenQuery.current) {
@@ -95,6 +98,8 @@ const ShopWithSidebarContent = () => {
         (categorySlug !== null && item.slug === categorySlug)
     );
     const title = params.get("title")?.trim() || undefined;
+    const typeParam = params.get("type")?.toUpperCase() as ProductType | undefined;
+    const type = typeParam && PRODUCT_TYPES.includes(typeParam) ? typeParam : undefined;
     const parseNumber = (key: string) => {
       const value = params.get(key);
       if (value === null || value.trim() === "") return undefined;
@@ -107,6 +112,7 @@ const ShopWithSidebarContent = () => {
     setSearchInput(title ?? "");
     setFilters((current) => ({
       ...INITIAL_FILTERS,
+      type,
       title,
       categoryId: category?.id ?? parseNumber("categoryId"),
       subCategoryId: parseNumber("subCategoryId"),
@@ -131,6 +137,7 @@ const ShopWithSidebarContent = () => {
     if (hasLegacyCategorySlug && categoriesLoading) return;
 
     const params = new URLSearchParams();
+    if (filters.type) params.set("type", filters.type);
     if (filters.title) params.set("title", filters.title);
     if (filters.categoryId !== undefined) {
       params.set("categoryId", String(filters.categoryId));
@@ -180,13 +187,22 @@ const ShopWithSidebarContent = () => {
           next.set(product.brand.brandId, product.brand.brandName);
         }
       });
+      // No new brands: keep the same list so nothing re-renders
+      if (next.size === current.length) return current;
       return Array.from(next, ([id, name]) => ({ id, name })).sort((a, b) =>
         a.name.localeCompare(b.name)
       );
     });
   }, [products]);
 
-  const brandOptions = useMemo(() => availableBrands, [availableBrands]);
+  // All brands from the API, so a brand picked on the home page always shows by name;
+  // brands seen on loaded products cover the API being unavailable.
+  const brandOptions = useMemo(() => {
+    if (brands.length === 0) return availableBrands;
+    return brands
+      .map((brand) => ({ id: brand.id, name: brand.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [brands, availableBrands]);
   const subcategoryOptions = useMemo(
     () =>
       subcategories.map((subcategory) => ({
@@ -336,6 +352,11 @@ const ShopWithSidebarContent = () => {
             </aside>
 
             <main className="min-w-0">
+              <ProductTypeTabs
+                value={filters.type}
+                onChange={(type) => updateFilter("type", type)}
+              />
+
               <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg bg-white px-4 py-3 shadow-1">
                 <p className="text-sm text-gray-600" aria-live="polite">
                   {isLoading && !pagination

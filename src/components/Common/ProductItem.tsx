@@ -37,9 +37,21 @@ const ProductItem = ({ item }: { item: Product }) => {
     dispatch(updateproductDetails({ ...item }));
   };
 
+  const discount =
+    item.discountPercent !== undefined && item.discountPercent > 0
+      ? item.discountPercent
+      : item.price > item.discountedPrice && item.price > 0
+      ? Math.round(((item.price - item.discountedPrice) / item.price) * 100)
+      : 0;
+
   return (
     <div className="group flex flex-col h-full">
       <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-[#F6F7FB] h-[270px] w-full mb-4">
+        {discount > 0 && (
+          <span className="absolute left-3 top-3 z-10 rounded bg-red px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
+            -{discount}%
+          </span>
+        )}
         <Image
           src={item.imgs?.previews?.[0] || "/images/products/product-1.png"}
           alt={item.title || "Product"}

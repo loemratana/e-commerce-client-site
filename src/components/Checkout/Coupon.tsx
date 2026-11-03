@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { couponsApi } from "@/lib/api/coupons.api";
 import { formatPrice, getApiErrorMessage } from "@/lib/order-utils";
 import { CouponResponse } from "@/types/order-api";
+import { useAvailableCoupons } from "@/hooks/useAvailableCoupons";
+import { couponDiscountLabel, couponTermsLabel } from "@/lib/coupon-utils";
 
 type Props = {
   orderAmount: number;
@@ -14,9 +16,10 @@ const Coupon = ({ orderAmount, appliedCoupon, onApply, onRemove }: Props) => {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+  const availableCoupons = useAvailableCoupons();
 
-  const handleApply = async () => {
-    const trimmed = code.trim();
+  const handleApply = async (codeToApply: string = code) => {
+    const trimmed = codeToApply.trim();
     if (!trimmed) return;
 
     setIsChecking(true);
@@ -75,7 +78,7 @@ const Coupon = ({ orderAmount, appliedCoupon, onApply, onRemove }: Props) => {
 
               <button
                 type="button"
-                onClick={handleApply}
+                onClick={() => void handleApply()}
                 disabled={isChecking || !code.trim()}
                 className="inline-flex font-medium text-white bg-blue py-3 px-6 rounded-md ease-out duration-200 hover:bg-blue-dark disabled:opacity-60"
               >
@@ -83,6 +86,44 @@ const Coupon = ({ orderAmount, appliedCoupon, onApply, onRemove }: Props) => {
               </button>
             </div>
             {error && <p className="mt-3 text-custom-sm text-red">{error}</p>}
+
+            {availableCoupons.length > 0 && (
+              <div className="mt-6">
+                <p className="mb-3 text-custom-sm font-medium text-dark">Available coupons</p>
+                <ul className="flex flex-col gap-2.5">
+                  {availableCoupons.map((coupon) => {
+                    const missing = coupon.minOrderAmount ? coupon.minOrderAmount - orderAmount : 0;
+                    return (
+                      <li
+                        key={coupon.code}
+                        className="flex items-center justify-between gap-3 rounded-md border border-dashed border-gray-4 py-2.5 px-4"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-custom-sm text-dark">
+                            <span className="font-mono font-semibold tracking-wide text-blue">{coupon.code}</span>
+                            {" · "}
+                            <span className="font-medium">{couponDiscountLabel(coupon)}</span>
+                          </p>
+                          <p className="text-custom-xs text-dark-4">
+                            {missing > 0
+                              ? `Add ${formatPrice(missing)} more to use this coupon`
+                              : couponTermsLabel(coupon)}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void handleApply(coupon.code)}
+                          disabled={isChecking || missing > 0}
+                          className="shrink-0 rounded-md border border-blue px-3 py-1 text-custom-sm font-medium text-blue duration-200 hover:bg-blue hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-blue"
+                        >
+                          Apply
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </>
         )}
       </div>

@@ -18,6 +18,19 @@ export const effectivePrice = (variant: ProductVariant) =>
     ? variant.priceAfterDiscount
     : variant.price;
 
+/**
+ * Whole-number "% off" for a variant, including a product-wide discount.
+ * Prefers the API's effectiveDiscountPercent; falls back to price vs. priceAfterDiscount.
+ */
+export const variantDiscountPercent = (variant: ProductVariant) => {
+  const applied = variant.effectiveDiscountPercent ?? variant.discountPercent;
+  if (applied != null && applied > 0) return Math.round(Math.min(applied, 100));
+  const sale = effectivePrice(variant);
+  return variant.price > sale && variant.price > 0
+    ? Math.round(((variant.price - sale) / variant.price) * 100)
+    : 0;
+};
+
 export const isInStock = (variant: ProductVariant) =>
   (variant.availableQuantity ?? 0) > 0;
 
@@ -116,9 +129,12 @@ export const toCardProduct = (product: ApiProduct): Product => {
     ? effectivePrice(cheapestVariant)
     : 0;
 
+  const discountPercent = cheapestVariant ? variantDiscountPercent(cheapestVariant) : 0;
+
   const images = [
     product.imageCover,
-    ...(product.images ?? [])
+    // Copy first: products from the redux store are frozen and can't be sorted in place
+    ...[...(product.images ?? [])]
       .sort((left, right) => (left.sortOrder ?? 0) - (right.sortOrder ?? 0))
       .map((image) => image.imageUrl),
   ].filter(Boolean);
@@ -130,6 +146,7 @@ export const toCardProduct = (product: ApiProduct): Product => {
     reviews: product.ratingsQuantity ?? 0,
     price: cheapestVariant?.price ?? 0,
     discountedPrice,
+    discountPercent,
     imgs: { thumbnails: images, previews: images },
     apiProduct: product,
   };

@@ -218,6 +218,7 @@ const Header = () => {
               type="button"
               aria-label="Open menu"
               aria-expanded={mobileMenuOpen}
+              id="tour-menu"
               onClick={() => setMobileMenuOpen(true)}
               className="-ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-dark hover:bg-gray-1 xl:hidden"
             >
@@ -228,12 +229,15 @@ const Header = () => {
               <Logo height={40} priority />
             </Link>
 
-            <div className="hidden max-w-[760px] flex-1 md:block">{searchForm("header-search")}</div>
+            <div id="tour-search" className="hidden max-w-[760px] flex-1 md:block">{searchForm("header-search")}</div>
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-              <AccountMenu isAuthenticated={isAuthenticated} />
+              <div id="tour-account">
+                <AccountMenu isAuthenticated={isAuthenticated} />
+              </div>
 
               <Link
+                id="tour-wishlist"
                 href="/wishlist"
                 aria-label={`Wishlist, ${wishlistCount} items`}
                 className="relative hidden h-11 w-11 items-center justify-center rounded-lg text-dark transition-colors hover:bg-gray-1 sm:flex"
@@ -246,6 +250,7 @@ const Header = () => {
 
               <button
                 type="button"
+                id="tour-cart"
                 onClick={openCartModal}
                 aria-label={`Open cart, ${cartCount} items, ${formatMoney(totalPrice)}`}
                 className="flex h-11 items-center gap-2.5 rounded-lg px-2 text-left transition-colors hover:bg-gray-1"
@@ -263,23 +268,25 @@ const Header = () => {
           </div>
 
           {/* Phones: search gets its own row */}
-          <div className="pb-3 md:hidden">{searchForm("header-search-mobile")}</div>
+          <div id="tour-search-mobile" className="pb-3 md:hidden">{searchForm("header-search-mobile")}</div>
         </div>
 
         {/* Desktop navigation */}
         <div className="hidden border-t border-gray-3 xl:block">
           <div className="site-container flex h-14 items-center gap-8">
-            <CategoryMenu
-              categories={categories}
-              emptyMessage={
-                categoriesError
-                  ? "Categories could not be loaded."
-                  : categoriesLoading
-                  ? "Loading categories..."
-                  : "No categories available."
-              }
-              onRetry={categoriesError ? retryCategories : undefined}
-            />
+            <div id="tour-categories">
+              <CategoryMenu
+                categories={categories}
+                emptyMessage={
+                  categoriesError
+                    ? "Categories could not be loaded."
+                    : categoriesLoading
+                    ? "Loading categories..."
+                    : "No categories available."
+                }
+                onRetry={categoriesError ? retryCategories : undefined}
+              />
+            </div>
             <nav aria-label="Main">
               <ul className="flex items-center gap-1">
                 {menuData.map((item) => {
