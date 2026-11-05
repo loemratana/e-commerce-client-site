@@ -22,6 +22,9 @@ type Props = {
   variant?: "card" | "inline";
 };
 
+const POLL_INTERVAL_MS = 10_000;
+const POLL_LIMIT_MS = 15 * 60_000;
+
 /** Payment status for an order, plus "Pay now" while it is still unpaid. */
 const OrderPayment = ({ order, onChange, variant = "card" }: Props) => {
   const [payments, setPayments] = useState<PaymentResponse[]>([]);
@@ -36,10 +39,48 @@ const OrderPayment = ({ order, onChange, variant = "card" }: Props) => {
   const shown = captured ?? latest;
   const canPay = needsPaymentAction(order.status, latest?.status, latest?.method);
 
+  // An online payment (ABA PayWay / Stripe) that may finish outside this page, e.g. a KHQR scanned
+  // in the ABA app. The API also checks these in the background every 30s.
+  const awaitingGateway =
+    order.status === "PENDING" && latest?.status === "PENDING" && isOnlinePaymentMethod(latest.method);
+
+  // While waiting, ask again every few seconds and whenever the tab gets focus again, so the order
+  // switches to "Paid" without a manual reload. Stops after 15 minutes.
+  useEffect(() => {
+    if (!awaitingGateway) return;
+    let stopped = false;
+    const startedAt = Date.now();
+    const check = () => {
+      if (stopped || document.visibilityState !== "visible") return;
+      if (Date.now() - startedAt > POLL_LIMIT_MS) return;
+      paymentsApi
+        .confirmForMyOrder(order.orderNumber)
+        .then((list) => {
+          if (stopped) return;
+          setPayments(list);
+          if (list.some((p) => p.status === "SUCCEEDED")) {
+            toast.success("Payment received. Thank you!");
+            onChange();
+          }
+        })
+        .catch(() => undefined);   // try again on the next tick
+    };
+    const timer = window.setInterval(check, POLL_INTERVAL_MS);
+    window.addEventListener("focus", check);
+    document.addEventListener("visibilitychange", check);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+      window.removeEventListener("focus", check);
+      document.removeEventListener("visibilitychange", check);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [awaitingGateway, order.orderNumber]);
+
   useEffect(() => {
     setIsLoading(true);
-    // While unpaid, ask the API to check with Stripe: the customer may have paid but closed the
-    // tab before coming back to the success page (there is no webhook to catch that).
+    // While unpaid, ask the API to check with the gateway: the customer may have paid but closed
+    // the tab before coming back to the success page.
     const load = order.status === "PENDING"
       ? paymentsApi.confirmForMyOrder(order.orderNumber).catch(() => paymentsApi.getForMyOrder(order.orderNumber))
       : paymentsApi.getForMyOrder(order.orderNumber);
@@ -110,6 +151,12 @@ const OrderPayment = ({ order, onChange, variant = "card" }: Props) => {
               {order.paymentMethod ? PAYMENT_METHOD_LABELS[order.paymentMethod] : "Not chosen yet"}
             </span>
           </p>
+          {awaitingGateway && (
+            <p className="text-gray-500">
+              Waiting for confirmation from {latest?.method ? PAYMENT_METHOD_LABELS[latest.method] : "the payment provider"}.
+              If you&apos;ve already paid, this updates automatically in a moment.
+            </p>
+          )}
           {latest?.status === "PENDING" && latest.method === "CASH_ON_DELIVERY" && (
             <p>Please have {formatPrice(order.totalOrderPrice)} ready for the courier.</p>
           )}

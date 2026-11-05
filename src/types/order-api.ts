@@ -67,8 +67,13 @@ export type OrderItemResponse = {
   /** Image of the ordered color, captured at order time. */
   imageUrl: string | null;
   quantity: number;
+  /** Regular unit price at order time. */
   price: number;
+  /** The product's discount when the order was placed; null = none. */
+  discountPercent?: number | null;
+  /** Unit price actually charged (price minus the product discount). */
   priceAfterDiscount: number | null;
+  /** priceAfterDiscount x quantity. Coupons are taken off the order, not the line. */
   lineTotal: number;
 };
 

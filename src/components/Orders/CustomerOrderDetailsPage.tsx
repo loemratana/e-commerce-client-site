@@ -293,6 +293,11 @@ const CustomerOrderDetailsPage: React.FC<CustomerOrderDetailsPageProps> = ({
                                   <span className="ml-1 text-xs line-through text-gray-400">
                                     {formatPrice(item.price)}
                                   </span>
+                                  {item.discountPercent ? (
+                                    <span className="ml-1 text-xs font-semibold text-green">
+                                      -{Number(item.discountPercent)}%
+                                    </span>
+                                  ) : null}
                                 </div>
                               ) : (
                                 formatPrice(item.price)
