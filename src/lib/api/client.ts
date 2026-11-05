@@ -1,7 +1,7 @@
 import { clearAuthTokens, saveAuthTokens } from "@/lib/auth-session";
 import type { AuthResponse } from "@/types/auth-api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.PUBLIC_API_URL;
 
 class ApiError extends Error {
   status: number;
